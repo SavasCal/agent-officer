@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+
+# lokalt: mina projektsökvägar och officerns analyser
+projects.json
+state/
+CLAUDE.md

@@ -1,0 +1,125 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>agentoffice</title>
+<style>
+  :root{--bg:#eef0f3;--card:#fff;--ink:#14161a;--mut:#6b7280;--line:#e5e7eb;--acc:#4f46e5;--sh:0 1px 2px rgba(0,0,0,.05),0 8px 24px -12px rgba(15,23,42,.18)}
+  *{box-sizing:border-box}
+  body{font:15px/1.5 system-ui,-apple-system,sans-serif;margin:0;background:var(--bg);color:var(--ink);display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+  aside{background:var(--card);color:var(--ink);padding:22px 14px;border-right:1px solid var(--line)}
+  aside h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#9ca3af;margin:0 8px 16px}
+  .item{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer;border-radius:10px;margin-bottom:4px;transition:background .15s}
+  .item:hover{background:#f3f4f6}.item.sel{background:var(--acc);color:#fff}
+  .item.off{opacity:.4}
+  .item b{flex:1;font-weight:600}
+  .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:#e5e7eb;color:#374151;white-space:nowrap;letter-spacing:.02em}
+  .badge.question{background:#fef3c7;color:#92400e}.badge.plan{background:#d1fae5;color:#065f46}
+  .sel .badge{background:rgba(255,255,255,.2);color:#fff}
+  main{padding:36px 48px;max-width:1100px}
+  @media(max-width:1000px){ol{grid-template-columns:repeat(2,1fr)}}
+  main h2{font-size:28px;letter-spacing:-.02em;margin:0 0 2px;display:flex;align-items:center;gap:12px}
+  .path{font-size:12px;color:var(--mut);margin-bottom:22px;font-family:ui-monospace,monospace}
+  .comment{font-size:16px;line-height:1.6;background:var(--card);border-radius:14px;padding:20px 22px;margin-bottom:24px;white-space:pre-wrap;box-shadow:var(--sh)}
+  .comment.q{background:#fffbeb}
+  h3{font-size:12px;color:var(--mut);letter-spacing:.12em;text-transform:uppercase;margin:24px 0 10px;display:flex;align-items:center;gap:12px}
+  .bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+  .bar i{display:block;height:100%;background:#10b981;transition:width .3s}
+  ol{padding:0;list-style:none;margin:0;counter-reset:a;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .act{background:var(--card);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;position:relative;min-height:160px;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s}
+  .act:hover{transform:translateY(-1px);box-shadow:0 2px 4px rgba(0,0,0,.05),0 14px 28px -12px rgba(15,23,42,.25)}
+  .act::before{counter-increment:a;content:counter(a);font-weight:800;color:#d1d5db;font-size:22px;line-height:1;text-align:right}
+  .act .top{display:flex;align-items:center;gap:8px;position:absolute;top:14px;left:14px}
+  .act > div{flex:1}
+  .act.done{opacity:.55}.act.done b{text-decoration:line-through}
+  .act b{display:block;font-size:15px}
+  .act p{margin:4px 0 0;color:#4b5563;font-size:14px;line-height:1.5}
+  .act input[type=checkbox]{margin:0;width:26px;height:26px;accent-color:#10b981;cursor:pointer}
+  .act i.cf{position:absolute;top:18px;left:22px;width:8px;height:8px;border-radius:2px;pointer-events:none;animation:pop .7s ease-out forwards}
+  @keyframes pop{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+  .act input[type=text]{width:100%;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;padding:8px 10px;margin-top:8px;background:#f9fafb;color:#374151}
+  .act input[type=text]:focus{outline:0;border-color:var(--acc);background:#fff}
+  .eff{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:#e5e7eb;color:#374151}
+  .eff.S{background:#d1fae5;color:#065f46}.eff.M{background:#fef3c7;color:#92400e}.eff.L{background:#fee2e2;color:#991b1b}
+  .legend{font-size:12px;color:#9ca3af;margin-top:8px}
+  .qs .act{min-height:0}
+  .qs .act::before{content:"?";color:#f59e0b}
+  textarea{width:100%;min-height:88px;margin:20px 0 10px;font:inherit;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--sh)}
+  textarea:focus{outline:0;border-color:var(--acc)}
+  button{padding:9px 16px;border:1px solid var(--line);background:var(--card);border-radius:10px;cursor:pointer;font:inherit;font-weight:600;box-shadow:var(--sh)}
+  button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+  button:hover:not(:disabled){filter:brightness(.96)}
+  button:disabled{opacity:.5;cursor:wait}
+  .row{display:flex;gap:10px;align-items:center}
+  small{color:var(--mut)}
+  details{margin-top:28px;font-size:14px;color:var(--mut)}
+  details summary{cursor:pointer}
+  .hist{white-space:pre-wrap;max-height:300px;overflow:auto;background:var(--card);border-radius:12px;padding:14px;color:#374151;margin-top:8px;box-shadow:var(--sh)}
+  label input{accent-color:var(--acc)}
+  .lens{display:flex;gap:6px;margin:0 0 14px}
+  .lens button{padding:7px 14px;border-radius:999px;font-size:13px;box-shadow:none;border:1px solid var(--line);color:var(--mut)}
+  .lens button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .status{width:100%;min-height:52px;margin:0 0 18px;font:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:#374151;box-shadow:var(--sh)}
+  .status:focus{outline:0;border-color:var(--acc)}
+  .add{margin-top:18px;display:flex;flex-direction:column;gap:6px}
+  .add input{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:8px}
+  .add button{padding:7px;font-size:13px;box-shadow:none}
+  .stale{background:#fef3c7;color:#92400e;border-radius:10px;padding:10px 14px;margin:0 0 14px;font-size:13px}
+  .chip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#4338ca}
+</style>
+<aside>
+  <h1>agentoffice</h1>
+  <div id="list"></div>
+  <form class="add" onsubmit="addProj(event)"><input name="name" placeholder="namn" required><input name="path" placeholder="~/sökväg" required><button>+ Lägg till</button></form>
+</aside>
+<main id="main"></main>
+<script>
+let S={}, busy={}, sel=localStorage.getItem('sel');
+const LENSES=[['all','Allt'],['market','Marknad'],['code','Produkt'],['money','Ekonomi']];
+const lensOf=n=>localStorage.getItem('lens-'+n)||'all';
+function setLens(n,l){localStorage.setItem('lens-'+n,l);render()}
+const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function load(){S=await (await fetch('/api/state')).json();if(!S.projects.some(p=>p.name===sel))sel=S.projects[0]?.name;render()}
+async function post(url,body){const r=await fetch(url,{method:'POST',body:JSON.stringify(body)});const j=await r.json();if(j.error)throw new Error(j.error);return j}
+async function run(n){busy[n]=true;render();try{await post('/api/run',{name:n,lens:lensOf(n)})}catch(e){alert(e.message)}busy[n]=false;load()}
+async function ans(n){const t=document.getElementById('a').value.trim();if(!t)return;await post('/api/answer',{name:n,text:t});await run(n)}
+// ponytail: 25 divs i JS, byt till canvas bara om det nagonsin laggar
+function confetti(el){const c=['#10b981','#4f46e5','#f59e0b','#ef4444','#06b6d4'];const box=el.closest('.act');
+  for(let k=0;k<25;k++){const i=document.createElement('i');i.className='cf';
+    i.style.background=c[k%c.length];
+    i.style.setProperty('--x',(Math.random()*160-80)+'px');
+    i.style.setProperty('--y',(Math.random()*120-90)+'px');
+    i.style.setProperty('--r',(Math.random()*720-360)+'deg');
+    i.style.animationDelay=(Math.random()*.1)+'s';box.appendChild(i)}}
+async function done(n,i,el){const note=document.getElementById('n-'+i).value.trim();
+  if(el.checked){confetti(el);await new Promise(r=>setTimeout(r,750))}
+  await post('/api/done',{name:n,index:i,done:el.checked,note});load()}
+async function note(n,i){const note=document.getElementById('n-'+i).value.trim();const d=document.getElementById('d-'+i).checked;if(!note&&!d)return;await post('/api/done',{name:n,index:i,done:d,note});load()}
+async function status(n,el){await post('/api/status',{name:n,text:el.value});}
+async function track(n,v){await post('/api/track',{name:n,tracked:v});load()}
+async function addProj(e){e.preventDefault();const f=e.target;try{await post('/api/add',{name:f.name.value.trim(),path:f.path.value.trim()});sel=f.name.value;f.reset();load()}catch(x){alert(x.message)}}
+const days=ts=>Math.floor((Date.now()-new Date(ts.replace(' ','T')))/864e5);
+function pick(n){sel=n;localStorage.setItem('sel',n);render()}
+const last=n=>[...(((S.state[n]||{}).history)||[])].reverse().find(x=>x.role==='officer');
+function render(){
+  document.getElementById('list').innerHTML=S.projects.map(p=>{const l=last(p.name);
+    return `<div class="item ${p.name===sel?'sel':''} ${p.tracked?'':'off'}" onclick="pick('${p.name}')"><b>${esc(p.name)}</b><span class="badge ${l?l.status:''}">${busy[p.name]?'…':l?l.status:'idle'}</span></div>`}).join('');
+  const p=S.projects.find(p=>p.name===sel); if(!p)return;
+  const h=((S.state[p.name]||{}).history)||[], l=last(p.name), st=l?l.status:'idle', b=busy[p.name];
+  document.getElementById('main').innerHTML=`
+    <h2>${esc(p.name)} <span class="badge ${st}">${b?'running…':st}</span>
+      <label style="margin-left:auto;font-size:13px;font-weight:400"><input type="checkbox" ${p.tracked?'checked':''} onchange="track('${p.name}',this.checked)"> tracked</label></h2>
+    <div class="path">${esc(p.path)} ${l?`· <small>${esc(l.ts)}</small> <span class="chip">${esc(LENSES.find(x=>x[0]===(l.lens||'all'))[1])}</span>`:''}</div>
+    <textarea class="status" placeholder="Läget just nu: omsättning, kunder, trafik, pipeline, deadlines…" onblur="status('${p.name}',this)">${esc(p.status||'')}</textarea>
+    <div class="lens">${LENSES.map(([k,t])=>`<button class="${lensOf(p.name)===k?'on':''}" onclick="setLens('${p.name}','${k}')">${t}</button>`).join('')}</div>
+    ${l&&days(l.ts)>=3?`<div class="stale">Planen är ${days(l.ts)} dagar gammal – kör om för färska steg.</div>`:''}
+    ${l?`<div class="comment ${st==='question'?'q':''}">${esc(l.comment)}</div>`:'<p><small>Inte analyserad än.</small></p>'}
+    ${l&&st==='question'?`<h3>Officern behöver veta</h3><ol class="qs">${l.questions.map(q=>`<li class="act"><b>${esc(q)}</b></li>`).join('')}</ol>`:''}
+    ${l&&st==='plan'?`<h3>Nästa steg <span class="bar"><i style="width:${100*l.actions.filter(a=>a.done).length/l.actions.length}%"></i></span><span>${l.actions.filter(a=>a.done).length}/${l.actions.length}</span></h3><ol>${l.actions.map((a,i)=>`<li class="act ${a.done?'done':''}"><div class="top"><span class="eff ${esc(a.effort)}" title="S = under en timme, M = halv–hel dag, L = flera dagar">${esc(a.effort)}</span><input type="checkbox" id="d-${i}" ${a.done?'checked':''} onchange="done('${p.name}',${i},this)" title="klart"></div><div><b>${esc(a.title)}</b><p>${esc(a.why)}</p></div><input type="text" id="n-${i}" placeholder="Lägg till kommentar…" value="${esc(a.note||'')}" onblur="note('${p.name}',${i})" onkeydown="if(event.key==='Enter')this.blur()"></li>`).join('')}</ol><div class="legend">S &lt;1 h · M ½–1 dag · L flera dagar</div>`:''}
+    ${l?`<textarea id="a" placeholder="${st==='question'?'Svara på frågorna…':'Kommentera, rätta eller lägg till info – kör sedan om…'}"></textarea>`:''}
+    <div class="row">
+      ${l?`<button class="pri" onclick="ans('${p.name}')" ${b?'disabled':''}>${st==='question'?'Svara & kör om':'Kommentera & kör om'}</button>`:''}
+      <button class="${l?'':'pri'}" onclick="run('${p.name}')" ${b||!p.tracked?'disabled':''}>${l?'Kör om utan kommentar':'Analysera'}</button>
+    </div>
+    ${h.length>1?`<details><summary>Historik (${h.length})</summary><div class="hist">${h.map(x=>x.role==='user'?`DU (${esc(x.ts)}): ${esc(x.text)}`:`OFFICER (${x.status}/${x.lens||'all'}, ${esc(x.ts)}): ${esc(x.comment)}${x.questions?'\n  ? '+x.questions.map(esc).join('\n  ? '):''}${x.actions?'\n  • '+x.actions.map(a=>esc(a.title)).join('\n  • '):''}`).join('\n\n')}</div></details>`:''}`;
+}
+load();
+</script>
